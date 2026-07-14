@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab Virtual – Faktor-Faktor Laju Reaksi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4f8;--surf:#ffffff;--surf2:#f8fafc;
+  --border:#dde3ec;--border2:#c5cfe0;
+  --acc:#2563eb;--acc2:#3b82f6;--acc3:#1d4ed8;
+  --text:#1e293b;--text2:#475569;--text3:#94a3b8;
+  --yellow:#d97706;--red:#dc2626;--green:#059669;
+  --h:56px;--fbase:14px;
+}
+@media (max-width:768px){:root{--fbase:13px;--h:46px;}}
+@media (min-width:1200px){:root{--fbase:15px;}}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 0%,rgba(37,99,235,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 50% at 90% 100%,rgba(37,99,235,0.05) 0%,transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(148,163,184,0.08) 40px),
+    repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(148,163,184,0.08) 40px);
+}
+header{position:relative;z-index:10;height:var(--h);flex-shrink:0;background:linear-gradient(135deg,#0f172a,#1e3a8a);border-bottom:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;padding:0 14px;gap:12px;box-shadow:0 2px 10px rgba(15,23,42,0.45);}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.logo-icon{width:35px;height:35px;border-radius:6px;background:#ffffff;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.logo-text{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#ffffff;line-height:1.1;}
+.logo-sub{font-size:9.5px;color:rgba(255,255,255,0.75);}
+nav{display:flex;gap:2px;flex:1;overflow-x:auto;}
+nav::-webkit-scrollbar{display:none;}
+.nb{position:relative;background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-family:'Inter',sans-serif;font-size:clamp(12px,1.3vw,14px);font-weight:500;padding:0 13px;height:var(--h);white-space:nowrap;transition:color .2s;}
+.nb::after{content:'';position:absolute;bottom:0;left:10px;right:10px;height:2px;background:#60a5fa;transform:scaleX(0);transition:transform .2s;border-radius:2px 2px 0 0;}
+.nb:hover{color:rgba(255,255,255,0.95);}
+.nb.active{color:#fff;}
+.nb.active::after{transform:scaleX(1);}
+#menuToggle{display:none;background:none;border:none;cursor:pointer;padding:6px;color:#fff;flex-shrink:0;touch-action:manipulation;}
+#menuToggle svg{display:block;}
+@media(max-width:640px){
+  header{flex-wrap:nowrap;padding:0 10px;}
+  .logo-text{font-size:16px;}
+  .logo-sub{display:none;}
+  #menuToggle{display:flex;align-items:center;justify-content:center;margin-left:auto;}
+  nav{display:none;flex-direction:column;position:fixed;top:var(--h);right:0;left:0;z-index:999;background:linear-gradient(180deg,#0f172a,#1e3a8a);border-bottom:1px solid rgba(255,255,255,.15);box-shadow:0 8px 24px rgba(0,0,0,.35);overflow:visible;gap:0;flex:none;}
+  nav.open{display:flex;}
+  .nb{height:52px;width:100%;text-align:left;padding:0 18px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;display:flex;align-items:center;gap:10px;}
+  .nb::after{display:none;}
+  .nb.active{background:rgba(255,255,255,.08);}
+  .nb img{width:24px!important;height:24px!important;margin-right:0!important;}
+}
+#app{position:relative;z-index:1;flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.page{display:none;flex:1;overflow:hidden;}
+.page.active{display:flex;flex-direction:column;}
+@keyframes fu{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+.page.active{animation:fu .22s ease;}
+.scroll{flex:1;overflow-y:auto;padding:10px 14px 14px;}
+.scroll::-webkit-scrollbar{width:4px;}
+.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.hero{background:linear-gradient(135deg,#0f172a,#2563eb);border:none;border-radius:9px;padding:10px 16px;margin-bottom:8px;display:flex;align-items:center;gap:20px;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 4px 18px rgba(37,99,235,.2);}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-bottom:7px;transition:border-color .2s,box-shadow .2s;box-shadow:0 1px 3px rgba(30,41,59,0.06);}
+.card:hover{border-color:var(--border2);box-shadow:0 3px 10px rgba(30,41,59,0.09);}
+.ch{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.ci{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.ci.b{background:rgba(37,99,235,.1);}
+.ci.y{background:rgba(217,119,6,.1);}
+.ci.g{background:rgba(5,150,105,.1);}
+.ci.r{background:rgba(220,38,38,.1);}
+.ci.p{background:rgba(124,58,237,.1);}
+.ct{font-family:'Space Grotesk',sans-serif;font-size:clamp(13px,1.5vw,15px);font-weight:700;color:var(--acc3);}
+.card p{font-size:clamp(12px,1.3vw,14px);line-height:1.7;color:var(--text2);margin-bottom:6px;}
+.card p:last-child{margin-bottom:0;}
+.card h4{font-size:clamp(10px,1.1vw,12px);font-weight:600;color:var(--acc);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 5px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-top:5px;}
+.fi{background:var(--surf2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;}
+.fi strong{display:block;font-size:clamp(11px,1.2vw,13px);color:var(--acc3);margin-bottom:3px;}
+.fi span{font-size:clamp(11px,1.2vw,13px);color:var(--text2);line-height:1.5;}
+.olist{list-style:none;}
+.olist li{display:flex;align-items:flex-start;gap:7px;font-size:clamp(12px,1.3vw,14px);color:var(--text2);line-height:1.6;padding:4px 0;border-bottom:1px solid var(--border);}
+.olist li:last-child{border-bottom:none;}
+.olist li::before{content:'›';color:var(--acc);font-weight:700;font-size:15px;margin-top:-1px;}
+.chips{display:flex;gap:5px;margin:6px 0;flex-wrap:wrap;}
+.chip{border-radius:5px;padding:3px 8px;font-size:clamp(11px,1.2vw,13px);font-weight:500;}
+.chip-b{background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);color:#1d4ed8;}
+.chip-r{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);color:#b91c1c;}
+.chip-g{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.2);color:#047857;}
+.chip-p{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);color:#6d28d9;}
+.steps{display:flex;flex-direction:column;gap:5px;}
+.step{display:flex;gap:10px;align-items:flex-start;background:var(--surf2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;transition:border-color .17s;}
+.step:hover{border-color:var(--acc2);background:#eff6ff;}
+.snum{min-width:20px;height:20px;border-radius:50%;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc);flex-shrink:0;}
+.step p{font-size:clamp(12px,1.3vw,14px);color:var(--text2);line-height:1.6;margin:0;}
+.notebox{background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:8px 12px;margin-top:7px;}
+.notebox .nt{font-size:9.5px;font-weight:600;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+.notebox p{font-size:clamp(12px,1.2vw,13px);color:#92400e;line-height:1.6;margin:0;}
+.sep{display:flex;align-items:center;gap:8px;margin:8px 0 5px;}
+.sep span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;font-weight:600;}
+.sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--border);}
+.tabbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;flex-shrink:0;}
+.tabbtn{background:var(--surf);border:1px solid var(--border);border-radius:7px;padding:7px 12px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .17s;display:flex;align-items:center;gap:6px;}
+.tabbtn:hover{border-color:var(--acc2);color:var(--acc);}
+.tabbtn.active{background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3);}
+.tabpanel{display:none;}
+.tabpanel.active{display:block;}
+.sim-wrap{display:grid;grid-template-columns:230px 1fr;gap:8px;flex:1;min-height:0;}
+@media(max-width:800px){.sim-wrap{grid-template-columns:1fr;}}
+.ctrl-panel{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;box-shadow:0 1px 3px rgba(30,41,59,0.06);}
+.ctrl-panel h3{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;color:var(--acc3);}
+.cg label{display:block;font-size:9.5px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+select{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 26px 6px 8px;font-family:'Inter',sans-serif;font-size:11.5px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%232563eb' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .17s;}
+select:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(37,99,235,.1);}
+.btn{width:100%;border:none;border-radius:6px;padding:8px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .17s;}
+.btn-start{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3);}
+.btn-start:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.35);}
+.btn-start:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-reset{background:var(--surf2);border:1px solid var(--border);color:var(--text2);}
+.btn-reset:hover{border-color:var(--acc);color:var(--acc);background:#eff6ff;}
+.sim-right{display:flex;flex-direction:column;gap:7px;overflow:hidden;overflow-y:auto;}
+.aquarium{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:9px;flex-shrink:0;box-shadow:0 1px 3px rgba(30,41,59,0.06);display:flex;flex-direction:column;}
+.aquarium h3{font-family:'Space Grotesk',sans-serif;font-size:11.5px;font-weight:700;color:var(--acc3);margin-bottom:6px;}
+#simCanvas{width:100%;border-radius:6px;display:block;background:#0f172a;border:1px solid var(--border);}
+.statsrow{display:flex;gap:6px;margin-top:6px;}
+.sbox{flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:6px;text-align:center;}
+.sv{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--acc);display:block;}
+.sl{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.pbwrap{width:100%;height:10px;background:var(--surf2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-top:8px;}
+.pbfill{height:100%;width:0%;background:linear-gradient(90deg,#1d4ed8,#60a5fa);transition:width .12s linear;}
+.wstable{width:100%;border-collapse:collapse;font-size:11px;}
+.wstable th{background:#eff6ff;color:var(--acc3);padding:6px 9px;text-align:left;border:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+.wstable td{padding:5px 9px;border:1px solid var(--border);color:var(--text2);}
+.wstable tr:nth-child(even) td{background:#f8fafc;}
+.wstable tr:hover td{background:#eff6ff;}
+.disc-area{width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 11px;font-family:'Inter',sans-serif;font-size:12px;color:var(--text);background:var(--surf2);resize:vertical;outline:none;transition:border-color .17s;line-height:1.6;margin-top:6px;min-height:56px;}
+.disc-area:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(37,99,235,.1);}
+.quiz-nav-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--surf);border:1px solid var(--border);border-radius:9px;margin-bottom:7px;flex-shrink:0;box-shadow:0 1px 3px rgba(30,41,59,0.05);}
+.qprog{display:flex;gap:3px;flex-wrap:wrap;}
+.qprog-dot{width:24px;height:24px;border-radius:5px;border:1px solid var(--border);background:var(--surf2);font-size:9.5px;font-weight:600;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .17s;}
+.qprog-dot.answered{border-color:var(--acc2);color:var(--acc);background:#eff6ff;}
+.qprog-dot.current{background:var(--acc);color:#fff;border-color:var(--acc);}
+.q-card{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:14px;flex:1;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(30,41,59,0.06);overflow-y:auto;}
+.qnum{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--acc);letter-spacing:.1em;margin-bottom:5px;}
+.qtext{font-size:13px;color:var(--text);line-height:1.55;font-weight:500;margin-bottom:10px;}
+.opts{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.opt{display:flex;align-items:flex-start;gap:8px;background:var(--surf2);border:1px solid var(--border);border-radius:7px;padding:8px 11px;cursor:pointer;transition:all .16s;font-size:12px;color:var(--text2);}
+.opt:hover{border-color:var(--acc2);background:#eff6ff;color:var(--text);}
+.opt.sel{border-color:var(--acc);background:#eff6ff;color:var(--acc3);}
+.opt.correct{background:#ecfdf5;border-color:#34d399;color:#047857;}
+.opt.wrong{background:#fff1f2;border-color:#f87171;color:#b91c1c;}
+.opt input{margin-top:1px;accent-color:var(--acc);cursor:pointer;}
+.qfb{margin-top:8px;padding:7px 10px;border-radius:6px;font-size:11.5px;display:none;}
+.qfb.on{display:block;}
+.qfb.ok{background:#eff6ff;color:#1e3a8a;border:1px solid #93c5fd;}
+.qfb.bad{background:#fff1f2;color:#b91c1c;border:1px solid #fecdd3;}
+.quiz-foot{display:flex;align-items:center;gap:7px;padding-top:7px;flex-shrink:0;}
+.btn-qnav{padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .17s;border:none;}
+.btn-prev{background:var(--surf2);border:1px solid var(--border);color:var(--text2);}
+.btn-prev:hover{border-color:var(--acc);color:var(--acc);background:#eff6ff;}
+.btn-next{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+.btn-next:hover{box-shadow:0 4px 14px rgba(37,99,235,.35);}
+.btn-submit-q{background:linear-gradient(135deg,#059669,#10b981);color:#fff;}
+.btn-submit-q:hover{box-shadow:0 3px 12px rgba(16,185,129,.3);}
+.qcounter{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text3);}
+.score-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(8px);}
+.score-overlay.on{display:flex;}
+.score-box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:32px 44px;text-align:center;box-shadow:0 20px 60px rgba(30,41,59,.18);animation:fu .28s ease;min-width:280px;}
+.score-big{font-family:'Space Grotesk',sans-serif;font-size:68px;font-weight:700;color:var(--acc);line-height:1;}
+.score-pct{font-size:20px;color:var(--text3);margin-top:2px;}
+.score-sub{font-size:12.5px;color:var(--text2);margin:8px 0 4px;}
+.score-grade{font-size:15px;font-weight:600;margin-top:8px;}
+.score-actions{display:flex;gap:8px;justify-content:center;margin-top:18px;}
+.btn-score{padding:8px 20px;border-radius:7px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .17s;}
+.btn-review{background:var(--surf2);border:1px solid var(--border);color:var(--text2);}
+.btn-review:hover{border-color:var(--acc);color:var(--acc);background:#eff6ff;}
+.btn-ulangi{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;}
+.btn-ulangi:hover{box-shadow:0 4px 14px rgba(37,99,235,.35);}
+#loadScreen{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#2563eb 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s ease;}
+#loadScreen.hide{opacity:0;pointer-events:none;}
+.load-logo{width:clamp(60px,8vw,90px);margin-bottom:16px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.35));}
+.load-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(18px,2.5vw,28px);font-weight:800;color:#fff;text-align:center;margin-bottom:4px;}
+.load-sub{font-family:'JetBrains Mono',monospace;font-size:clamp(10px,1.1vw,12px);color:#93c5fd;letter-spacing:.15em;text-transform:uppercase;text-align:center;margin-bottom:28px;}
+.load-bar-wrap{width:clamp(220px,28vw,340px);height:6px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin-bottom:8px;position:relative;}
+.load-bar-slide{height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#93c5fd,#3b82f6);border-radius:6px;transition:width .1s linear;}
+.load-percent{font-family:'JetBrains Mono',monospace;font-size:clamp(12px,1.4vw,15px);color:#fff;font-weight:700;margin-bottom:14px;text-align:center;letter-spacing:.05em;}
+.load-status{font-size:clamp(11px,1.1vw,12px);color:#bfdbfe;font-family:'Inter',sans-serif;margin-bottom:32px;min-height:16px;text-align:center;}
+#btnMulaiPraktikum{display:none;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;padding:10px 28px;font-family:'Space Grotesk',sans-serif;font-size:clamp(12px,1.3vw,14px);font-weight:700;cursor:pointer;letter-spacing:.03em;box-shadow:0 4px 18px rgba(37,99,235,.4);animation:btnPop .4s cubic-bezier(.34,1.56,.64,1) forwards;transition:transform .18s, box-shadow .18s;}
+#btnMulaiPraktikum:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 28px rgba(37,99,235,.5);}
+@keyframes btnPop{from{opacity:0;transform:scale(0.7);}to{opacity:1;transform:scale(1);}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.celeb-overlay{position:fixed;inset:0;z-index:20000;align-items:center;justify-content:center;display:none;pointer-events:none;}
+.celeb-overlay.on{display:flex;}
+.celeb-box{position:relative;background:linear-gradient(145deg,#0a0f2e,#0f172a,#1a2a6e);border:1px solid rgba(99,179,237,.25);border-radius:24px;padding:36px 44px;text-align:center;max-width:380px;width:90%;box-shadow:0 30px 100px rgba(0,0,0,.6);transform:scale(.5) translateY(60px);opacity:0;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .4s;pointer-events:auto;}
+.celeb-box.show{transform:scale(1) translateY(0);opacity:1;}
+@keyframes celebBounce{0%,100%{transform:translateY(0) scale(1);}40%{transform:translateY(-14px) scale(1.08);}70%{transform:translateY(-4px) scale(.97);}}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loadScreen">
+  <img class="load-logo" src="https://denicendrianto41.github.io/logo_vlab.png" alt="Logo">
+  <div class="load-title">Lab Maya Kimia</div>
+  <div class="load-sub">Faktor-Faktor Laju Reaksi</div>
+  <div class="load-bar-wrap"><div class="load-bar-slide" id="loadBar"></div></div>
+  <div class="load-percent" id="loadPercent">0%</div>
+  <div class="load-status" id="loadStatus">Memuat laboratorium virtual…</div>
+  <button id="btnMulaiPraktikum" onclick="startPraktikum()">Mulai Praktikum</button>
+</div>
+
+<audio id="clickSfx" src="https://denicendrianto41.github.io/jump.wav" preload="auto"></audio>
+<audio id="sndBenar" src="https://denicendrianto41.github.io/benar.wav" preload="auto"></audio>
+<audio id="sndSalah" src="https://denicendrianto41.github.io/salah.wav" preload="auto"></audio>
+<audio id="sndBerhasil" src="https://denicendrianto41.github.io/berhasil.wav" preload="auto"></audio>
+
+<header style="justify-content:space-between;">
+  <div class="logo">
+    <div class="logo-icon" style="background:#fff;overflow:hidden;padding:2px;">
+      <img src="https://denicendrianto41.github.io/logo_vlab.png" alt="Logo" style="width:100%;height:100%;object-fit:contain;display:block;">
+    </div>
+    <div>
+      <div class="logo-text">Lab Maya Kimia</div>
+      <div class="logo-sub">Faktor-Faktor Laju Reaksi</div>
+    </div>
+  </div>
+  <button id="menuToggle" onclick="toggleNav()" aria-label="Menu">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <line id="mL1" x1="3" y1="6" x2="21" y2="6"/><line id="mL2" x1="3" y1="12" x2="21" y2="12"/><line id="mL3" x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <nav id="mainNav" style="margin-left:0;justify-content:flex-end;">
+    <button class="nb active" onclick="show('tujuan',this);closeNav()">
+      <img src="https://denicendrianto41.github.io/tujuan.png" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px;">Tujuan</button>
+    <button class="nb" onclick="show('teori',this);closeNav()">
+      <img src="https://denicendrianto41.github.io/teori.png" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px;">Teori</button>
+    <button class="nb" onclick="show('alatbahan',this);closeNav()">
+      <img src="https://denicendrianto41.github.io/alat-bahan.png" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px;">Alat &amp; Bahan</button>
+    <button class="nb" onclick="show('prosedur',this);closeNav()">
+      <img src="https://denicendrianto41.github.io/prosedur.png" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px;">Prosedur</button>
+    <button class="nb" onclick="show('simulasi',this);closeNav()">
+      <img src="https://denicendrianto41.github.io/simulasi.png" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px;">Simulasi</button>
+    <button class="nb" onclick="show('evaluasi',this);closeNav()">
+      <img src="https://denicendrianto41.github.io/diskusi.png" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px;">Evaluasi</button>
+  </nav>
+</header>
+
+<div id="app">
+
+<!-- ===== TUJUAN ===== -->
+<div id="page-tujuan" class="page active">
+  <div class="scroll" style="padding:14px 16px 20px;">
+    <div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 45%,#2563eb 100%);border-radius:16px;padding:22px 24px 18px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(15,23,42,0.28);">
+      <div style="position:absolute;top:-30px;right:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(14px,1.8vw,20px);font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.2;">Lab Virtual – Faktor-Faktor Laju Reaksi</div>
+        <div style="width:48px;height:3px;background:linear-gradient(90deg,#60a5fa,#93c5fd);border-radius:2px;margin:10px 0;"></div>
+        <p style="font-size:clamp(11px,1.2vw,13px);color:rgba(226,232,240,0.88);line-height:1.7;margin:0;max-width:640px;">
+          Selamat datang di laboratorium virtual Kimia. Rancang dan lakukan percobaan <strong style="color:#93c5fd;">faktor-faktor yang mempengaruhi laju reaksi</strong> — konsentrasi, luas permukaan, suhu, dan katalis — secara interaktif, mengikuti LKPD 4.7 Praktikum Laju Reaksi.
+        </p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(30,41,59,0.07);">
+        <div style="position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#2563eb,#60a5fa);"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;margin-top:4px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎯</div>
+          <div>
+            <div style="font-size:9px;font-weight:700;color:#2563eb;letter-spacing:0.1em;text-transform:uppercase;">KD 4.7</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(12px,1.3vw,14px);font-weight:700;color:#1e293b;">Tujuan Pembelajaran</div>
+          </div>
+        </div>
+        <p style="font-size:clamp(11px,1.2vw,13px);color:#475569;line-height:1.7;margin:0;">
+          Melalui model <strong style="color:#1d4ed8;">Problem Based Learning</strong> dan pendekatan saintifik, peserta didik mampu merancang, melakukan, menyimpulkan, serta menyajikan hasil percobaan <strong>faktor-faktor yang mempengaruhi laju reaksi dan orde reaksi</strong>.
+        </p>
+      </div>
+      <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(30,41,59,0.07);">
+        <div style="position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#059669,#34d399);"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;margin-top:4px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#d1fae5,#ecfdf5);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔬</div>
+          <div>
+            <div style="font-size:9px;font-weight:700;color:#059669;letter-spacing:0.1em;text-transform:uppercase;">Tujuan</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(12px,1.3vw,14px);font-weight:700;color:#1e293b;">Percobaan</div>
+          </div>
+        </div>
+        <p style="font-size:clamp(11px,1.2vw,13px);color:#475569;line-height:1.7;margin:0;">
+          Membuktikan pengaruh <strong style="color:#059669;">konsentrasi, luas permukaan bidang sentuh, suhu, dan katalis</strong> terhadap laju reaksi melalui 4 percobaan kelompok, lalu menentukan orde reaksinya.
+        </p>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:16px 18px;box-shadow:0 2px 12px rgba(30,41,59,0.07);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#fef3c7,#fffbeb);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏆</div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:#d97706;letter-spacing:0.1em;text-transform:uppercase;">Indikator Pencapaian Kompetensi</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(12px,1.3vw,14px);font-weight:700;color:#1e293b;">Hasil Belajar yang Diharapkan</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#1d4ed8;font-family:'JetBrains Mono',monospace;">1</div>
+          <span style="font-size:clamp(11px,1.2vw,13px);color:#334155;line-height:1.6;">4.7.2 Melakukan percobaan <strong style="color:#1d4ed8;">faktor-faktor yang mempengaruhi laju reaksi</strong> dan orde reaksi</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#059669;font-family:'JetBrains Mono',monospace;">2</div>
+          <span style="font-size:clamp(11px,1.2vw,13px);color:#334155;line-height:1.6;">4.7.3 <strong style="color:#059669;">Menyimpulkan</strong> hasil percobaan faktor-faktor laju reaksi dan orde reaksi</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#7c3aed;font-family:'JetBrains Mono',monospace;">3</div>
+          <span style="font-size:clamp(11px,1.2vw,13px);color:#334155;line-height:1.6;">4.7.4 <strong style="color:#7c3aed;">Menyajikan</strong> hasil percobaan faktor-faktor laju reaksi dan orde reaksi</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#fee2e2,#fecaca);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#dc2626;font-family:'JetBrains Mono',monospace;">4</div>
+          <span style="font-size:clamp(11px,1.2vw,13px);color:#334155;line-height:1.6;">Mengembangkan sikap <strong style="color:#dc2626;">ingin tahu, teliti, dan bertanggung jawab</strong> dalam diskusi kelompok (4C)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TEORI ===== -->
+<div id="page-teori" class="page">
+  <div class="scroll">
+    <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 60%,#1d4ed8 100%);border-radius:14px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 24px rgba(15,36,96,0.22);position:relative;overflow:hidden;flex-shrink:0;">
+      <div style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid rgba(255,255,255,0.18);">📚</div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(14px,1.8vw,19px);font-weight:800;color:#fff;">Dasar Teori</div>
+        <div style="font-size:clamp(10px,1.1vw,11.5px);color:rgba(147,197,253,0.85);margin-top:2px;"><em>Perubahan konsentrasi zat tiap satuan waktu</em></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ci b">⚗️</div><div class="ct">Apa itu Laju Reaksi?</div></div>
+      <p><strong style="color:var(--acc3);">Laju reaksi</strong> menunjukkan perubahan konsentrasi pereaksi (reaktan) atau zat hasil reaksi (produk) dalam satuan waktu — dapat berupa detik, menit, hari, atau bahkan tahun. Seiring bertambahnya waktu, jumlah pereaksi berkurang, sedangkan zat hasil reaksi semakin bertambah.</p>
+      <p>Cepat lambatnya suatu zat bereaksi berbeda-beda, misalnya besi lebih cepat berkarat di udara lembap dibanding udara kering, dan zat berbentuk serbuk lebih cepat larut dalam air panas dibanding air dingin.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci b">🧪</div><div class="ct" style="font-size:13px;">1. Konsentrasi</div></div>
+        <p style="font-size:12px;">Semakin besar konsentrasi pereaksi, semakin banyak partikel per satuan volume, sehingga tumbukan antarpartikel semakin sering terjadi dan laju reaksi semakin <strong>cepat</strong>.</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;background:#eff6ff;border-left:3px solid #2563eb;padding:6px 10px;border-radius:0 6px 6px 0;color:#1d4ed8;">NaHCO₃ + CH₃COOH → CH₃COONa + H₂O + CO₂↑</div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci g">📐</div><div class="ct" style="font-size:13px;">2. Luas Permukaan</div></div>
+        <p style="font-size:12px;">Zat padat yang dihaluskan memiliki luas bidang sentuh lebih besar dibanding bentuk utuh, sehingga lebih banyak partikel yang bersentuhan dan bereaksi lebih <strong>cepat</strong>.</p>
+        <p style="font-size:12px;margin:0;">Contoh: vitamin C utuh vs dipotong vs dihaluskan dalam air.</p>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci r">🌡️</div><div class="ct" style="font-size:13px;">3. Suhu</div></div>
+        <p style="font-size:12px;">Kenaikan suhu mempercepat gerak partikel sehingga tumbukan lebih sering terjadi dan energi tumbukan lebih besar, meningkatkan laju reaksi secara <strong>signifikan</strong>.</p>
+        <p style="font-size:12px;margin:0;">Contoh: garam lebih cepat larut dalam air panas dibanding air dingin.</p>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci p">⚡</div><div class="ct" style="font-size:13px;">4. Katalis</div></div>
+        <p style="font-size:12px;">Katalis adalah zat yang mempercepat laju reaksi dengan cara <strong>menurunkan energi aktivasi</strong>, tanpa ikut bereaksi secara permanen (tidak habis bereaksi).</p>
+        <p style="font-size:12px;margin:0;">Contoh: Bayclin mempercepat reaksi oksidasi logam dalam larutan cuka.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ci y">📈</div><div class="ct">Orde Reaksi</div></div>
+      <p>Orde reaksi menyatakan pengaruh perubahan konsentrasi pereaksi terhadap laju reaksi, ditentukan dari data hasil percobaan (bukan dari persamaan reaksi). Grafik hubungan konsentrasi terhadap waktu pada tiap percobaan digunakan untuk menentukan orde reaksi tersebut — inilah yang akan kalian gambarkan pada Lembar Kerja setelah melakukan simulasi/praktikum.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ALAT DAN BAHAN ===== -->
+<div id="page-alatbahan" class="page">
+  <div class="scroll">
+    <div class="card">
+      <div class="ch"><div class="ci b">🔍</div><div class="ct">Alat &amp; Bahan per Kelompok Percobaan</div></div>
+      <p style="font-size:11.5px;">Empat kelompok akan melakukan percobaan berbeda secara paralel, masing-masing menguji satu faktor yang mempengaruhi laju reaksi.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci b">1️⃣</div><div class="ct" style="font-size:13px;">Kelompok 1 · Konsentrasi</div></div>
+        <h4>Alat</h4>
+        <div class="chips"><span class="chip chip-b">🧫 Erlenmeyer × 3</span><span class="chip chip-b">🎈 Balon × 3</span><span class="chip chip-b">⏱️ Stopwatch</span><span class="chip chip-b">📏 Gelas ukur</span><span class="chip chip-b">📊 Milimeter blok</span></div>
+        <h4>Bahan</h4>
+        <div class="chips"><span class="chip chip-g">🍶 Asam cuka</span><span class="chip chip-g">🥄 Soda kue (NaHCO₃)</span></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci r">2️⃣</div><div class="ct" style="font-size:13px;">Kelompok 2 · Suhu</div></div>
+        <h4>Alat</h4>
+        <div class="chips"><span class="chip chip-b">🧪 Gelas kimia × 3</span><span class="chip chip-b">🥢 Batang pengaduk</span><span class="chip chip-b">⏱️ Stopwatch</span><span class="chip chip-b">🌡️ Termometer</span><span class="chip chip-b">📏 Gelas ukur</span></div>
+        <h4>Bahan</h4>
+        <div class="chips"><span class="chip chip-g">🧂 Garam halus</span><span class="chip chip-g">🔥 Air panas</span><span class="chip chip-g">💧 Air suhu ruang</span><span class="chip chip-g">🧊 Air dingin</span></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci g">3️⃣</div><div class="ct" style="font-size:13px;">Kelompok 3 · Luas Permukaan</div></div>
+        <h4>Alat</h4>
+        <div class="chips"><span class="chip chip-b">🧪 Gelas kimia × 3</span><span class="chip chip-b">⏱️ Stopwatch</span><span class="chip chip-b">🔨 Lumpang &amp; alu</span><span class="chip chip-b">📏 Gelas ukur</span></div>
+        <h4>Bahan</h4>
+        <div class="chips"><span class="chip chip-g">💊 Vitamin C</span><span class="chip chip-g">💧 Air suhu ruang</span></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ch"><div class="ci p">4️⃣</div><div class="ct" style="font-size:13px;">Kelompok 4 · Katalis</div></div>
+        <h4>Alat</h4>
+        <div class="chips"><span class="chip chip-b">🧪 Gelas kimia × 2</span><span class="chip chip-b">📏 Gelas ukur</span><span class="chip chip-b">⏱️ Stopwatch</span></div>
+        <h4>Bahan</h4>
+        <div class="chips"><span class="chip chip-g">🍶 Asam cuka</span><span class="chip chip-g">🧴 Bayclin</span><span class="chip chip-g">📎 Logam penjepit kertas</span></div>
+      </div>
+    </div>
+
+    <div class="notebox">
+      <div class="nt">💡 Catatan Keselamatan</div>
+      <p>Gunakan sarung tangan saat menangani Bayclin dan asam cuka pekat. Hati-hati menangani air panas. Selalu beri label pada setiap wadah (A, B, C) agar tidak tertukar.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROSEDUR ===== -->
+<div id="page-prosedur" class="page">
+  <div class="scroll">
+    <div class="tabbar" id="tabbarProsedur"></div>
+    <div id="prosedurPanels"></div>
+  </div>
+</div>
+
+<!-- ===== SIMULASI ===== -->
+<div id="page-simulasi" class="page">
+  <div style="flex:1;overflow:hidden;padding:8px 12px 8px;display:flex;flex-direction:column;gap:7px;min-height:0;">
+    <div class="tabbar" id="tabbarSim"></div>
+    <div class="sim-wrap">
+      <div class="ctrl-panel">
+        <h3 id="simTitle">Kelompok 1 · Konsentrasi</h3>
+        <div class="cg">
+          <label id="simVarLabel">Massa Soda Kue</label>
+          <select id="simVar" onchange="onSimVarChange()"></select>
+        </div>
+        <button class="btn btn-start" id="btnMulaiSim" onclick="mulaiSimulasi()">▶ Mulai Reaksi</button>
+        <button class="btn btn-reset" onclick="resetSimulasi()">↺ Reset</button>
+        <div id="simDesc" style="font-size:11px;color:var(--text2);line-height:1.6;background:var(--surf2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;"></div>
+      </div>
+      <div class="sim-right">
+        <div class="aquarium">
+          <h3 id="simCanvasTitle">🔬 Ruang Reaksi</h3>
+          <canvas id="simCanvas" width="640" height="230"></canvas>
+          <div class="pbwrap"><div class="pbfill" id="pbfill"></div></div>
+          <div class="statsrow">
+            <div class="sbox"><span class="sv" id="statTime">0.0s</span><span class="sl">Waktu</span></div>
+            <div class="sbox"><span class="sv" id="statProgress">0%</span><span class="sl">Progress</span></div>
+            <div class="sbox"><span class="sv" id="statStatus">Siap</span><span class="sl">Status</span></div>
+          </div>
+        </div>
+        <div class="aquarium" style="flex:1;overflow-y:auto;">
+          <h3>📋 Tabel Data Pengamatan</h3>
+          <div id="simTableWrap"></div>
+          <textarea class="disc-area" id="simAnalisis" placeholder="Tulis analisis kelompok kalian di sini: larutan manakah yang paling cepat/lambat? Bagaimana pengaruh faktor ini terhadap laju reaksi?"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EVALUASI ===== -->
+<div id="page-evaluasi" class="page">
+  <div style="flex:1;overflow:hidden;padding:8px 12px 8px;display:flex;flex-direction:column;gap:7px;min-height:0;">
+    <div class="quiz-nav-header">
+      <div class="qprog" id="qprog"></div>
+      <div class="qcounter" id="qcounter">1 / 8</div>
+    </div>
+    <div class="q-card" id="qcard"></div>
+    <div class="quiz-foot">
+      <button class="btn-qnav btn-prev" onclick="quizPrev()">‹ Sebelumnya</button>
+      <button class="btn-qnav btn-next" id="btnQuizNext" onclick="quizNext()">Berikutnya ›</button>
+      <button class="btn-qnav btn-submit-q" id="btnQuizSubmit" onclick="quizSubmit()" style="display:none;">✓ Selesai &amp; Lihat Nilai</button>
+      <span class="qcounter">Kesimpulan kelompok tersedia setelah kuis</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- SCORE OVERLAY -->
+<div class="score-overlay" id="scoreOverlay">
+  <div class="score-box">
+    <div class="score-big" id="scoreBig">0/8</div>
+    <div class="score-pct" id="scorePct">0%</div>
+    <div class="score-sub">Skor Evaluasi Laju Reaksi</div>
+    <div class="score-grade" id="scoreGrade"></div>
+    <div class="score-actions">
+      <button class="btn-score btn-review" onclick="closeScore()">Tinjau Jawaban</button>
+      <button class="btn-score btn-ulangi" onclick="quizRestart()">↺ Ulangi Kuis</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celeb-overlay" id="celebOverlay">
+  <canvas id="confettiCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+  <div class="celeb-box" id="celebBox">
+    <div style="font-size:64px;animation:celebBounce .8s ease infinite;">🏆</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;color:#fff;margin:10px 0;">Kerja Bagus! 🎉</div>
+    <div style="font-size:13px;color:#93c5fd;line-height:1.6;margin-bottom:18px;">Kalian berhasil menyelesaikan evaluasi laju reaksi dengan sangat baik!</div>
+    <button onclick="closeCelebration()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:12px;padding:10px 26px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Lanjutkan ➜</button>
+  </div>
+</div>
+
+<script>
+/* ============ LOADING ============ */
+(function(){
+  const bar=document.getElementById('loadBar'),pct=document.getElementById('loadPercent'),status=document.getElementById('loadStatus');
+  let current=0;const total=2600,step=20,inc=100/(total/step);
+  const iv=setInterval(()=>{
+    current=Math.min(100,current+inc);const v=Math.floor(current);
+    bar.style.width=v+'%';pct.textContent=v+'%';
+    if(current>=100){clearInterval(iv);pct.textContent='100%';status.textContent='✅ Laboratorium siap digunakan!';document.getElementById('btnMulaiPraktikum').style.display='block';}
+  },step);
+})();
+function startPraktikum(){
+  const sfx=new Audio('https://denicendrianto41.github.io/tring.wav');sfx.play().catch(()=>{});
+  const ls=document.getElementById('loadScreen');ls.classList.add('hide');
+  setTimeout(()=>{ls.style.display='none';},650);
+}
+document.addEventListener('click',function(e){
+  const el=e.target.closest('button, .nb, .btn, select, input, .tabbtn, .opt');
+  if(!el||el.id==='btnMulaiPraktikum') return;
+  const sfx=document.getElementById('clickSfx');if(!sfx) return;
+  sfx.currentTime=0;sfx.play().catch(()=>{});
+});
+
+/* ============ NAV ============ */
+function show(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+function toggleNav(){document.getElementById('mainNav').classList.toggle('open');}
+function closeNav(){document.getElementById('mainNav').classList.remove('open');}
+
+/* ============ PROSEDUR DATA ============ */
+const prosedurData=[
+{
+  key:'konsentrasi',label:'1. Konsentrasi',icon:'🧫',color:'#2563eb',
+  steps:[
+    'Siapkan 3 buah Erlenmeyer (A, B, dan C) beserta 3 buah balon.',
+    'Erlenmeyer A: masukkan <strong>20 mL cuka + 1 gram soda kue</strong>.',
+    'Erlenmeyer B: masukkan <strong>20 mL cuka + 2 gram soda kue</strong>.',
+    'Erlenmeyer C: masukkan <strong>20 mL cuka + 3 gram soda kue</strong>.',
+    'Tutup segera mulut setiap Erlenmeyer dengan balon yang telah diisi soda kue.',
+    'Nyalakan stopwatch dan amati waktu yang diperlukan balon hingga mengembang penuh.',
+    'Catat hasil pengamatan pada tabel data.'
+  ],
+  perhatikan:['Masukkan soda kue ke balon terlebih dahulu, baru pasang ke Erlenmeyer','Tutup mulut Erlenmeyer dengan cepat agar gas CO₂ tidak lolos','Gunakan volume cuka yang sama (20 mL) di setiap Erlenmeyer']
+},
+{
+  key:'suhu',label:'2. Suhu',icon:'🌡️',color:'#dc2626',
+  steps:[
+    'Siapkan 3 gelas kimia: gelas 1 diisi 20 mL air panas, gelas 2 air suhu ruang, gelas 3 air dingin.',
+    'Ukur suhu awal air pada masing-masing gelas menggunakan termometer.',
+    'Masukkan 5 gram garam halus ke masing-masing gelas secara bersamaan.',
+    'Aduk dengan batang pengaduk dan amati waktu yang diperlukan garam hingga larut sempurna menggunakan stopwatch.',
+    'Ukur suhu akhir air setelah garam larut.',
+    'Catat seluruh hasil pengamatan pada tabel data.'
+  ],
+  perhatikan:['Hati-hati saat menuang air panas','Gunakan massa garam yang sama (5 gram) di setiap gelas','Aduk dengan kecepatan yang konsisten pada ketiga gelas']
+},
+{
+  key:'luaspermukaan',label:'3. Luas Permukaan',icon:'📐',color:'#059669',
+  steps:[
+    'Siapkan 3 gelas kimia, masing-masing diisi 40 mL air suhu ruang.',
+    'Gelas 1: masukkan vitamin C dalam keadaan <strong>utuh</strong> (tanpa dihaluskan).',
+    'Gelas 2: masukkan vitamin C yang telah <strong>dibagi menjadi 4 potongan</strong>.',
+    'Gelas 3: masukkan vitamin C yang telah <strong>dihaluskan</strong> dengan lumpang dan alu.',
+    'Amati dan catat waktu yang diperlukan vitamin C hingga larut sempurna pada masing-masing gelas.',
+    'Catat hasil pengamatan pada tabel data.'
+  ],
+  perhatikan:['Gunakan volume air yang sama (40 mL) di setiap gelas','Masukkan ketiga sampel vitamin C secara bersamaan agar perbandingan waktu akurat','Bersihkan lumpang dan alu sebelum digunakan']
+},
+{
+  key:'katalis',label:'4. Katalis',icon:'⚡',color:'#7c3aed',
+  steps:[
+    'Siapkan 2 gelas kimia: gelas 1 diisi 40 mL cuka, gelas 2 diisi 40 mL cuka + 40 mL Bayclin.',
+    'Masukkan 2 buah kawat logam penjepit kertas ke dalam masing-masing gelas.',
+    'Amati mana yang lebih cepat bereaksi (berkarat/berkarat/menimbulkan gelembung) menggunakan stopwatch.',
+    'Catat waktu yang diperlukan reaksi terlihat jelas pada tabel data pengamatan.'
+  ],
+  perhatikan:['Bayclin bersifat korosif — gunakan sarung tangan','Masukkan kawat logam secara bersamaan pada kedua gelas','Amati perubahan warna/gelembung dengan cermat']
+}
+];
+(function(){
+  const tabbar=document.getElementById('tabbarProsedur');
+  const panelsWrap=document.getElementById('prosedurPanels');
+  prosedurData.forEach((k,i)=>{
+    const b=document.createElement('button');
+    b.className='tabbtn'+(i===0?' active':'');
+    b.innerHTML=k.icon+' '+k.label;
+    b.onclick=()=>{
+      document.querySelectorAll('#tabbarProsedur .tabbtn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      document.querySelectorAll('.prosedur-panel').forEach(p=>p.classList.remove('active'));
+      document.getElementById('pros-'+k.key).classList.add('active');
+    };
+    tabbar.appendChild(b);
+
+    const panel=document.createElement('div');
+    panel.className='tabpanel prosedur-panel'+(i===0?' active':'');
+    panel.id='pros-'+k.key;
+    panel.innerHTML=`
+      <div class="two-col">
+        <div class="card" style="margin-bottom:0;">
+          <div class="ch"><div class="ci b">📋</div><div class="ct">Cara Kerja — ${k.label}</div></div>
+          <div class="steps">
+            ${k.steps.map((s,idx)=>`<div class="step"><div class="snum">${idx+1}</div><p>${s}</p></div>`).join('')}
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="ch"><div class="ci r">⚠️</div><div class="ct" style="color:var(--red);">Perhatikan!</div></div>
+          <ul class="olist">${k.perhatikan.map(p=>`<li>${p}</li>`).join('')}</ul>
+          <div class="notebox">
+            <div class="nt">💡 Tips</div>
+            <p>Gunakan <strong>satu variabel berbeda</strong> per unit percobaan (Erlenmeyer/gelas), dan jaga variabel lain tetap sama, agar hasil perbandingan valid.</p>
+          </div>
+        </div>
+      </div>`;
+    panelsWrap.appendChild(panel);
+  });
+})();
+
+/* ============ SIMULASI ============ */
+const simConfig={
+  konsentrasi:{
+    label:'Kelompok 1 · Konsentrasi',varLabel:'Massa Soda Kue',
+    unit:'g',icon:'🎈',
+    levels:[
+      {code:'A',val:'1 gram',factor:1,desc:'20 mL cuka + 1 gram soda kue. Sedikit gas CO₂ terbentuk, balon mengembang perlahan.'},
+      {code:'B',val:'2 gram',factor:2,desc:'20 mL cuka + 2 gram soda kue. Gas CO₂ terbentuk lebih banyak, balon mengembang lebih cepat.'},
+      {code:'C',val:'3 gram',factor:3,desc:'20 mL cuka + 3 gram soda kue. Gas CO₂ terbentuk paling banyak, balon mengembang paling cepat.'}
+    ],
+    cols:['Kode','Konsentrasi Soda Kue','Volume Cuka','Waktu Balon Mengembang'],
+    row:(lv,t)=>[lv.code,lv.val,'20 mL',t.toFixed(1)+' s']
+  },
+  suhu:{
+    label:'Kelompok 2 · Suhu',varLabel:'Suhu Air',
+    unit:'',icon:'🧂',
+    levels:[
+      {code:'1',val:'Air Dingin (±10°C)',factor:0.5,desc:'Garam larut paling lambat karena gerak partikel air lambat pada suhu rendah.'},
+      {code:'2',val:'Air Suhu Ruang (±27°C)',factor:1,desc:'Kelarutan garam berlangsung dengan kecepatan sedang.'},
+      {code:'3',val:'Air Panas (±80°C)',factor:2.4,desc:'Garam larut paling cepat karena partikel air bergerak jauh lebih cepat dan sering bertumbukan.'}
+    ],
+    cols:['Gelas','Suhu Air','Massa Garam','Waktu Larut'],
+    row:(lv,t)=>[lv.code,lv.val,'5 g',t.toFixed(1)+' s']
+  },
+  luaspermukaan:{
+    label:'Kelompok 3 · Luas Permukaan',varLabel:'Bentuk Vitamin C',
+    unit:'',icon:'💊',
+    levels:[
+      {code:'1',val:'Utuh (tanpa dihaluskan)',factor:1,desc:'Luas bidang sentuh paling kecil, vitamin C larut paling lambat.'},
+      {code:'2',val:'Dipotong 4 bagian',factor:2,desc:'Luas bidang sentuh bertambah, vitamin C larut lebih cepat.'},
+      {code:'3',val:'Dihaluskan',factor:4,desc:'Luas bidang sentuh paling besar, vitamin C larut paling cepat.'}
+    ],
+    cols:['Gelas','Konsentrasi/Bentuk Vitamin C','Volume Air','Waktu Larut'],
+    row:(lv,t)=>[lv.code,lv.val,'40 mL',t.toFixed(1)+' s']
+  },
+  katalis:{
+    label:'Kelompok 4 · Katalis',varLabel:'Penambahan Katalis',
+    unit:'',icon:'⚡',
+    levels:[
+      {code:'1',val:'Cuka saja (tanpa Bayclin)',factor:1,desc:'Reaksi oksidasi logam berlangsung lambat tanpa katalis.'},
+      {code:'2',val:'Cuka + Bayclin (dengan katalis)',factor:3,desc:'Bayclin menurunkan energi aktivasi sehingga reaksi jauh lebih cepat, gelembung gas lebih banyak.'}
+    ],
+    cols:['Gelas Kimia','Keadaan Logam / Larutan','Waktu Reaksi Terlihat'],
+    row:(lv,t)=>[lv.code,lv.val,t.toFixed(1)+' s']
+  }
+};
+let simState={key:'konsentrasi',levelIdx:0,running:false,tables:{konsentrasi:[],suhu:[],luaspermukaan:[],katalis:[]}};
+let simAnim=null,simParticles=[],simStartTime=0,simDuration=10,simDone=false;
+
+function buildSimTabs(){
+  const tb=document.getElementById('tabbarSim');
+  tb.innerHTML='';
+  Object.keys(simConfig).forEach((key,i)=>{
+    const c=simConfig[key];
+    const b=document.createElement('button');
+    b.className='tabbtn'+(key===simState.key?' active':'');
+    b.innerHTML=c.icon+' '+c.label.split('·')[0];
+    b.onclick=()=>{switchSimTab(key);};
+    tb.appendChild(b);
+  });
+}
+function switchSimTab(key){
+  simState.key=key;simState.levelIdx=0;
+  document.querySelectorAll('#tabbarSim .tabbtn').forEach((b,i)=>b.classList.toggle('active',Object.keys(simConfig)[i]===key));
+  const c=simConfig[key];
+  document.getElementById('simTitle').textContent=c.label;
+  document.getElementById('simVarLabel').textContent=c.varLabel;
+  const sel=document.getElementById('simVar');
+  sel.innerHTML=c.levels.map((lv,i)=>`<option value="${i}">${lv.code} — ${lv.val}</option>`).join('');
+  sel.value=0;
+  updateSimDesc();
+  renderSimTable();
+  resetCanvasVisual();
+}
+function onSimVarChange(){
+  simState.levelIdx=parseInt(document.getElementById('simVar').value,10);
+  updateSimDesc();
+  resetCanvasVisual();
+}
+function updateSimDesc(){
+  const c=simConfig[simState.key],lv=c.levels[simState.levelIdx];
+  document.getElementById('simDesc').innerHTML='<strong style="color:var(--acc3);">'+lv.code+' — '+lv.val+'</strong><br>'+lv.desc;
+}
+function renderSimTable(){
+  const c=simConfig[simState.key];
+  const rows=simState.tables[simState.key];
+  let html='<table class="wstable"><thead><tr>'+c.cols.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>';
+  if(rows.length===0){
+    html+=`<tr><td colspan="${c.cols.length}" style="text-align:center;color:var(--text3);">Belum ada data — jalankan simulasi untuk mengisi tabel</td></tr>`;
+  } else {
+    rows.forEach(r=>{html+='<tr>'+r.map(v=>`<td>${v}</td>`).join('')+'</tr>';});
+  }
+  html+='</tbody></table>';
+  document.getElementById('simTableWrap').innerHTML=html;
+}
+
+/* Canvas particle simulation */
+const canvas=document.getElementById('simCanvas');
+const ctx=canvas.getContext('2d');
+function resetCanvasVisual(){
+  simState.running=false;simDone=false;
+  if(simAnim) cancelAnimationFrame(simAnim);
+  document.getElementById('pbfill').style.width='0%';
+  document.getElementById('statTime').textContent='0.0s';
+  document.getElementById('statProgress').textContent='0%';
+  document.getElementById('statStatus').textContent='Siap';
+  document.getElementById('btnMulaiSim').disabled=false;
+  initParticles();
+  drawFrame(0);
+}
+function initParticles(){
+  const c=simConfig[simState.key],lv=c.levels[simState.levelIdx];
+  const n=Math.round(10*lv.factor);
+  simParticles=[];
+  for(let i=0;i<Math.min(n,45);i++){
+    simParticles.push({
+      x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+      vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,
+      r:3+Math.random()*2,type:Math.random()>0.5?'a':'b'
+    });
+  }
+}
+function drawFrame(progress){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const grad=ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0,'#0f172a');grad.addColorStop(1,'#1e3a8a');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,canvas.width,canvas.height);
+  simParticles.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.type==='a'?'rgba(96,165,250,0.85)':'rgba(52,211,153,0.85)';
+    ctx.fill();
+  });
+  ctx.fillStyle='rgba(255,255,255,0.75)';
+  ctx.font='11px JetBrains Mono, monospace';
+  ctx.fillText('Progress reaksi: '+Math.round(progress*100)+'%',10,18);
+}
+function mulaiSimulasi(){
+  if(simState.running) return;
+  const c=simConfig[simState.key],lv=c.levels[simState.levelIdx];
+  simState.running=true;simDone=false;
+  document.getElementById('btnMulaiSim').disabled=true;
+  document.getElementById('statStatus').textContent='Bereaksi…';
+  simDuration=Math.max(2,Math.min(18,10/lv.factor));
+  simStartTime=performance.now();
+  const speedFactor=Math.min(3,0.6+lv.factor*0.5);
+  simParticles.forEach(p=>{const sp=speedFactor;p.vx=(Math.random()-0.5)*2*sp;p.vy=(Math.random()-0.5)*2*sp;});
+  function loop(now){
+    const elapsed=(now-simStartTime)/1000;
+    const progress=Math.min(1,elapsed/simDuration);
+    simParticles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<p.r||p.x>canvas.width-p.r) p.vx*=-1;
+      if(p.y<p.r||p.y>canvas.height-p.r) p.vy*=-1;
+      p.x=Math.max(p.r,Math.min(canvas.width-p.r,p.x));
+      p.y=Math.max(p.r,Math.min(canvas.height-p.r,p.y));
+    });
+    if(Math.random()<0.1+0.4*Math.min(1,speedFactor/3)){
+      simParticles.push({x:Math.random()*canvas.width,y:canvas.height-4,vx:(Math.random()-0.5)*1.5,vy:-1.5-Math.random()*1.5,r:2+Math.random()*1.5,type:'gas',life:40});
+    }
+    simParticles.forEach(p=>{if(p.type==='gas'){p.y+=p.vy;p.life--;}});
+    simParticles=simParticles.filter(p=>p.type!=='gas'||p.life>0);
+    drawFrame(progress);
+    document.getElementById('pbfill').style.width=(progress*100)+'%';
+    document.getElementById('statTime').textContent=elapsed.toFixed(1)+'s';
+    document.getElementById('statProgress').textContent=Math.round(progress*100)+'%';
+    if(progress>=1){
+      simState.running=false;simDone=true;
+      document.getElementById('statStatus').textContent='✅ Selesai';
+      document.getElementById('btnMulaiSim').disabled=false;
+      logSimResult(elapsed);
+      return;
+    }
+    simAnim=requestAnimationFrame(loop);
+  }
+  simAnim=requestAnimationFrame(loop);
+}
+function logSimResult(t){
+  const c=simConfig[simState.key],lv=c.levels[simState.levelIdx];
+  const rows=simState.tables[simState.key];
+  const existingIdx=rows.findIndex(r=>r[0]===lv.code);
+  const newRow=c.row(lv,t);
+  if(existingIdx>=0) rows[existingIdx]=newRow; else rows.push(newRow);
+  renderSimTable();
+  playSnd('sndBerhasil');
+}
+function resetSimulasi(){
+  const rows=simState.tables[simState.key];
+  rows.length=0;
+  renderSimTable();
+  resetCanvasVisual();
+}
+function playSnd(id){try{const a=document.getElementById(id);if(a){a.currentTime=0;a.play().catch(()=>{});}}catch(e){}}
+
+buildSimTabs();switchSimTab('konsentrasi');
+
+/* ============ QUIZ ============ */
+const quizData=[
+{q:'Laju reaksi menyatakan…',opts:['Perubahan konsentrasi pereaksi atau produk tiap satuan waktu','Jumlah total zat dalam suatu reaksi','Massa jenis larutan hasil reaksi','Volume gas yang selalu tetap'],correct:0,fb:'Laju reaksi = perubahan konsentrasi reaktan/produk per satuan waktu.'},
+{q:'Manakah yang BUKAN merupakan faktor yang mempengaruhi laju reaksi?',opts:['Konsentrasi pereaksi','Suhu reaksi','Warna wadah reaksi','Katalis'],correct:2,fb:'Warna wadah tidak memengaruhi laju reaksi; yang berpengaruh adalah konsentrasi, luas permukaan, suhu, dan katalis.'},
+{q:'Reaksi antara soda kue (NaHCO₃) dan asam cuka (CH₃COOH) menghasilkan gas…',opts:['Oksigen (O₂)','Karbon dioksida (CO₂)','Hidrogen (H₂)','Nitrogen (N₂)'],correct:1,fb:'NaHCO₃ + CH₃COOH → CH₃COONa + H₂O + CO₂, gas CO₂ inilah yang mengembangkan balon.'},
+{q:'Semakin besar luas permukaan bidang sentuh suatu zat padat, maka laju reaksinya akan…',opts:['Semakin lambat','Tidak berpengaruh','Semakin cepat','Berhenti total'],correct:2,fb:'Luas permukaan lebih besar memberi lebih banyak titik sentuh antarpartikel sehingga reaksi lebih cepat.'},
+{q:'Katalis mempercepat laju reaksi dengan cara…',opts:['Menambah jumlah produk akhir','Menurunkan energi aktivasi reaksi','Menaikkan energi aktivasi reaksi','Mengubah jenis produk reaksi'],correct:1,fb:'Katalis menyediakan jalur reaksi alternatif dengan energi aktivasi lebih rendah.'},
+{q:'Mengapa garam lebih cepat larut dalam air panas dibanding air dingin?',opts:['Air panas lebih berat','Partikel air panas bergerak lebih cepat sehingga tumbukan lebih sering','Air panas mengandung lebih sedikit molekul','Air dingin bersifat basa'],correct:1,fb:'Kenaikan suhu mempercepat gerak partikel, sehingga frekuensi dan energi tumbukan meningkat.'},
+{q:'Pada percobaan katalis, apa fungsi Bayclin terhadap reaksi logam dengan cuka?',opts:['Sebagai pelarut saja','Sebagai katalis yang mempercepat reaksi oksidasi logam','Sebagai penghambat reaksi','Tidak berpengaruh terhadap reaksi'],correct:1,fb:'Bayclin berperan sebagai katalis yang mempercepat reaksi oksidasi logam dalam larutan cuka.'},
+{q:'Orde reaksi ditentukan berdasarkan…',opts:['Persamaan reaksi setara','Data hasil percobaan (bukan dari koefisien reaksi)','Dugaan tanpa data','Warna larutan'],correct:1,fb:'Orde reaksi harus ditentukan dari data eksperimen, tidak bisa hanya dilihat dari koefisien persamaan reaksi.'}
+];
+let quizIdx=0,quizAnswers=new Array(quizData.length).fill(null);
+
+function renderQuizProg(){
+  const wrap=document.getElementById('qprog');wrap.innerHTML='';
+  quizData.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='qprog-dot'+(quizAnswers[i]!==null?' answered':'')+(i===quizIdx?' current':'');
+    d.textContent=i+1;
+    d.onclick=()=>{quizIdx=i;renderQuiz();};
+    wrap.appendChild(d);
+  });
+  document.getElementById('qcounter').textContent=(quizIdx+1)+' / '+quizData.length;
+}
+function renderQuiz(){
+  renderQuizProg();
+  const q=quizData[quizIdx];
+  const card=document.getElementById('qcard');
+  const sel=quizAnswers[quizIdx];
+  card.innerHTML=`
+    <div class="qnum">SOAL ${quizIdx+1} DARI ${quizData.length}</div>
+    <div class="qtext">${q.q}</div>
+    <ul class="opts">${q.opts.map((o,i)=>`<li class="opt${sel===i?' sel':''}" onclick="selectOpt(${i})"><input type="radio" name="opt" ${sel===i?'checked':''} readonly>${o}</li>`).join('')}</ul>
+    <div class="qfb ${sel!==null?'on':''} ${sel!==null?(sel===q.correct?'ok':'bad'):''}" id="qfb">${sel!==null?(sel===q.correct?'✅ Benar! ':'❌ Kurang tepat. ')+q.fb:''}</div>
+  `;
+  document.getElementById('btnQuizNext').style.display=quizIdx===quizData.length-1?'none':'inline-block';
+  document.getElementById('btnQuizSubmit').style.display=quizIdx===quizData.length-1?'inline-block':'none';
+}
+function selectOpt(i){
+  const q=quizData[quizIdx];
+  quizAnswers[quizIdx]=i;
+  playSnd(i===q.correct?'sndBenar':'sndSalah');
+  renderQuiz();
+}
+function quizPrev(){if(quizIdx>0){quizIdx--;renderQuiz();}}
+function quizNext(){if(quizIdx<quizData.length-1){quizIdx++;renderQuiz();}}
+function quizSubmit(){
+  const score=quizAnswers.reduce((acc,a,i)=>acc+(a===quizData[i].correct?1:0),0);
+  document.getElementById('scoreBig').textContent=score+'/'+quizData.length;
+  const pct=Math.round(score/quizData.length*100);
+  document.getElementById('scorePct').textContent=pct+'%';
+  let grade='Terus berlatih!',color='var(--red)';
+  if(pct>=90){grade='🏆 Luar Biasa!';color='var(--green)';}
+  else if(pct>=70){grade='👍 Bagus!';color='var(--acc)';}
+  else if(pct>=50){grade='🙂 Cukup Baik';color='var(--yellow)';}
+  document.getElementById('scoreGrade').textContent=grade;
+  document.getElementById('scoreGrade').style.color=color;
+  document.getElementById('scoreOverlay').classList.add('on');
+  if(pct>=70) setTimeout(showCelebration,400);
+}
+function closeScore(){document.getElementById('scoreOverlay').classList.remove('on');}
+function quizRestart(){
+  quizAnswers=new Array(quizData.length).fill(null);quizIdx=0;
+  closeScore();renderQuiz();
+}
+renderQuiz();
+
+/* ============ CELEBRATION / CONFETTI ============ */
+function showCelebration(){
+  playSnd('sndBerhasil');
+  const overlay=document.getElementById('celebOverlay'),box=document.getElementById('celebBox');
+  overlay.classList.add('on');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>box.classList.add('show')));
+  launchConfetti();
+}
+function closeCelebration(){
+  const overlay=document.getElementById('celebOverlay'),box=document.getElementById('celebBox');
+  box.classList.remove('show');
+  setTimeout(()=>{overlay.classList.remove('on');},350);
+}
+let confettiRAF=null;
+function launchConfetti(){
+  const canvasC=document.getElementById('confettiCanvas');const cctx=canvasC.getContext('2d');
+  canvasC.width=window.innerWidth;canvasC.height=window.innerHeight;
+  const colors=['#2563eb','#3b82f6','#60a5fa','#fbbf24','#34d399','#f87171','#a78bfa'];
+  const pieces=Array.from({length:150},()=>({
+    x:Math.random()*canvasC.width,y:Math.random()*-canvasC.height*0.6,
+    w:5+Math.random()*10,h:3+Math.random()*5,r:Math.random()*Math.PI*2,dr:(Math.random()-0.5)*0.18,
+    dy:2+Math.random()*4,dx:(Math.random()-0.5)*2.2,col:colors[Math.floor(Math.random()*colors.length)],opacity:1
+  }));
+  let start=null;
+  function draw(ts){
+    if(!start) start=ts;const elapsed=ts-start;
+    cctx.clearRect(0,0,canvasC.width,canvasC.height);
+    pieces.forEach(p=>{
+      p.y+=p.dy;p.x+=p.dx;p.r+=p.dr;
+      if(elapsed>2200) p.opacity=Math.max(0,p.opacity-0.015);
+      cctx.save();cctx.globalAlpha=p.opacity;cctx.translate(p.x,p.y);cctx.rotate(p.r);
+      cctx.fillStyle=p.col;cctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cctx.restore();
+    });
+    if(elapsed<4200) confettiRAF=requestAnimationFrame(draw);
+    else cctx.clearRect(0,0,canvasC.width,canvasC.height);
+  }
+  confettiRAF=requestAnimationFrame(draw);
+}
+</script>
+</body>
+</html>
